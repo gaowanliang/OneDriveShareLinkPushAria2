@@ -24,29 +24,30 @@ header = {
 # "https://cokemine-my.sharepoint.com/:f:/g/personal/cokemine_cokemine_onmicrosoft_com/EukJbTMXkhJDrPpNVgZM8oUBmywiHfYgL7TSySrAeokVRw?e=FMaVLz"
 
 
-def getFiles(originalPath, req, layers):
+def getFiles(originalPath, req, layers, _id=0):
     if req == None:
         req = requests.session()
     reqf = req.get(originalPath, headers=header)
     if ',"FirstRow"' not in reqf.text:
         print("\t"*layers, "这个文件夹没有文件")
-        return
+        return 0
 
-    f = open("a.html", "w+", encoding="utf-8")
-    f.write(reqf.text)
-    f.close()
+    #f = open("a.html", "w+", encoding="utf-8")
+    # f.write(reqf.text)
+    # f.close()
 
     p = re.search(
         'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', reqf.text)
     jsonData = json.loads(p.group(1))
     # print(p.group(1))
     redURL = reqf.url
-    new_url = urllib.parse.urlparse(redURL)
+    # new_url = urllib.parse.urlparse(redURL)
     query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(redURL).query))
     redsURL = redURL.split("/")
-    downloadURL = "/".join(redsURL[:-1])+"/download.aspx?UniqueId="
+    # downloadURL = "/".join(redsURL[:-1])+"/download.aspx?UniqueId="
 
     # print(query)
+    fileCount = 0
 
     for i in jsonData:
         if i['FSObjType'] == "1":
@@ -57,29 +58,38 @@ def getFiles(originalPath, req, layers):
             originalPath = "/".join(redsURL[:-1]) + \
                 "/onedrive.aspx?" + urllib.parse.urlencode(query)
             # print(originalPath)
-            getFiles(originalPath, req, layers+1)
+            fileCount += getFiles(originalPath, req, layers+1, _id=fileCount)
         else:
-            print("\t"*layers, "文件：",
-                  i['FileLeafRef'], "\t独特ID：", i["UniqueId"])
+            fileCount += 1
+            print("\t"*layers, "文件 [%d]：%s\t独特ID：%s" %
+                  (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
+    return fileCount
 
 
-def downloadFiles(originalPath, aria2URL, token):
-    req = requests.session()
-    req = req.get(originalPath, headers=header)
+def downloadFiles(originalPath, req, layers, aria2URL, token, start=1, num=-1, _id=0):
+    if req == None:
+        req = requests.session()
+    # print(header)
+    reqf = req.get(originalPath, headers=header)
+
     # f=open()
+    if ',"FirstRow"' not in reqf.text:
+        print("\t"*layers, "这个文件夹没有文件")
+        return 0
 
     p = re.search(
-        'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', req.text)
+        'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', reqf.text)
     jsonData = json.loads(p.group(1))
-    redURL = req.url
+    redURL = reqf.url
     redsURL = redURL.split("/")
+    query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(redURL).query))
     downloadURL = "/".join(redsURL[:-1])+"/download.aspx?UniqueId="
 
-    # print(downloadURL)
+    # print(reqf.headers)
 
-    s2 = parse.urlparse(redURL)
+    s2 = urllib.parse.urlparse(redURL)
     header["referer"] = redURL
-    header["cookie"] = req.headers["Set-Cookie"]
+    header["cookie"] = reqf.headers["set-cookie"]
     header["authority"] = s2.netloc
 
     # .replace("-", "%2D")
@@ -90,15 +100,35 @@ def downloadFiles(originalPath, aria2URL, token):
         # print(key+':'+str(value))
         headerStr += key+':'+str(value)+"\n"
 
+    fileCount = 0
     # print(headerStr)
     for i in jsonData:
-        cc = downloadURL+(i["UniqueId"][1:-1].lower())
-        dd = dict(out=i["FileLeafRef"],  header=headerStr)
-        jsonreq = json.dumps({'jsonrpc': '2.0', 'id': 'qwer',
-                              'method': 'aria2.addUri',
-                              "params": ["token:"+token, [cc], dd]})
-        c = requests.post(aria2URL, data=jsonreq)
-        pprint(json.loads(c.text))
+        if i['FSObjType'] == "1":
+            print("\t"*layers, "文件夹：",
+                  i['FileLeafRef'], "\t独特ID：", i["UniqueId"], "正在进入")
+            query['id'] = os.path.join(
+                query['id'],  i['FileLeafRef']).replace("\\", "/")
+            originalPath = "/".join(redsURL[:-1]) + \
+                "/onedrive.aspx?" + urllib.parse.urlencode(query)
+            # print(originalPath)
+            fileCount += downloadFiles(originalPath, req, layers+1,
+                                       aria2URL, token, _id=fileCount, start=start, num=num)
+        else:
+            fileCount += 1
+            if num == -1 or start <= fileCount < start+num:
+                print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
+                      (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
+                cc = downloadURL+(i["UniqueId"][1:-1].lower())
+                dd = dict(out=i["FileLeafRef"],  header=headerStr)
+                jsonreq = json.dumps({'jsonrpc': '2.0', 'id': 'qwer',
+                                      'method': 'aria2.addUri',
+                                      "params": ["token:"+token, [cc], dd]})
+                c = requests.post(aria2URL, data=jsonreq)
+                pprint(json.loads(c.text))
+            else:
+                print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t非目标文件" %
+                      (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
+    return fileCount
 
 
 def getFilesHavePwd(originalPath, password):
