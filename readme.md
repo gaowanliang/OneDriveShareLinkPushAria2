@@ -25,3 +25,4 @@ Extract the download URL from OneDrive or SharePoint share link and push it to a
 * downloadStart: 下载起始文件的号码，默认为1
 * downloadNum: 从downloadStart开始的文件连续下载多少个，-1表示全部下载
 
+## 有密码的链接
