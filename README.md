@@ -1,7 +1,11 @@
 # OneDriveShareLinkPushAria2
 Extract the download URL from OneDrive or SharePoint share link and push it to aria2
 
-从OneDrive或SharePoint共享链接提取下载URL并将其推送到aria2
+从OneDrive或SharePoint共享链接提取下载URL并将其推送到aria2，即使在无图形界面的系统中依然可以使用。
+
+# 依赖
+requests==2.25.1
+pyppeteer==0.2.5
 
 # 使用方法
 
@@ -38,3 +42,6 @@ Extract the download URL from OneDrive or SharePoint share link and push it to a
 * OneDriveSharePwd: OneDrive链接的密码
   
 使用方法和上面类似。
+
+# 注意
+使用前，使用 git clone https://github.com/gaowanliang/OneDriveShareLinkPushAria2.git 将项目整个克隆，才能使用，havepassword.py依赖于main.py，如果要使用需要密码的版本，需要 pip install pyppeteer
