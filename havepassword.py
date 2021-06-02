@@ -3,6 +3,18 @@ import asyncio
 from main import getFiles, downloadFiles, header
 from pprint import pprint
 
+
+OneDriveShareURL = "https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r"
+OneDriveSharePwd = "xkx"
+
+aria2Link = "http://localhost:5800/jsonrpc"
+aria2Secret = "123456"
+
+isDownload = False
+downloadStart = 1
+downloadNum = -1
+
+
 os.environ['PYPPETEER_HOME'] = os.path.split(os.path.realpath(__file__))[0]
 # os.environ['PYPPETEER_DOWNLOAD_HOST'] = "http://npm.taobao.org/mirrors"
 
@@ -52,12 +64,9 @@ def havePwdDownloadFiles(iurl, password, aria2URL, token, start=1, num=-1):
     downloadFiles(url, None, 0, aria2URL, token, start=start, num=num)
 
 
-if __name__ == "__main1__":
-    havePwdGetFiles(
-        'https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r', "xkx")
-
 if __name__ == "__main__":
-    havePwdDownloadFiles("https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r",
-                         "xkx",
-                         'http://localhost:5800/jsonrpc',
-                         "GAOwan", start=10, num=5)
+    if isDownload:
+        havePwdDownloadFiles(OneDriveShareURL, OneDriveSharePwd, aria2Link,
+                             aria2Secret,  start=downloadStart, num=downloadNum)
+    else:
+        havePwdGetFiles(OneDriveShareURL, OneDriveSharePwd)

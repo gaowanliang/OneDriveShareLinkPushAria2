@@ -8,6 +8,16 @@ from urllib import parse
 import requests
 import os
 
+OneDriveShareURL = "https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh"
+
+aria2Link = "http://localhost:5800/jsonrpc"
+aria2Secret = "123456"
+
+isDownload = False
+downloadStart = 1
+downloadNum = -1
+
+
 header = {
     'sec-ch-ua-mobile': '?0',
     'upgrade-insecure-requests': '1',
@@ -196,7 +206,11 @@ def getFilesHavePwd(originalPath, password):
 
 
 if __name__ == "__main__":
-    getFiles("https://gw6-my.sharepoint.com/:f:/g/personal/admin_gwliang_com/EvyrJ1GVBJBCjI42SuqG4yIBFxT-B5tUsyDsTKiZQX97uw?e=jtqYl0", None, 0)
-    # downloadFiles("https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh",   'http://localhost:5800/jsonrpc', "123456")
+    if isDownload:
+        downloadFiles(OneDriveShareURL, aria2Link, aria2Secret,
+                      start=downloadStart, num=downloadNum)
+    else:
+        getFiles(OneDriveShareURL, None, 0)
+    #
     # getFilesHavePwd(
     #   "https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r&guestaccesstoken=xyz", "xkx")
