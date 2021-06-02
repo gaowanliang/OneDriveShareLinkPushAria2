@@ -23,6 +23,19 @@ Extract the download URL from OneDrive or SharePoint share link and push it to a
 * aria2Secret: aria2 的密码
 * isDownload: 是否下载，如果是`False`，只输出文件列表
 * downloadStart: 下载起始文件的号码，默认为1
-* downloadNum: 从downloadStart开始的文件连续下载多少个，-1表示全部下载
+* downloadNum: 从downloadStart开始的文件连续下载多少个，-1表示全部下载（-1时，无视downloadStart）
+
+如果想要下载第二个文件，则需要`downloadStart=2`，`downloadNum=1`
+
+如果想要下载第二、第三个文件，则需要`downloadStart=2`，`downloadNum=2`
+
+修改好后，确保目标aria2处于开启状态，执行`python3 main.py`
 
 ## 有密码的链接
+以 https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r 这个下载链接为例
+
+此时需要使用有密码的下载代码，也就是[havepassword.py](havepassword.py)，打开这个文件，可以看到有一些全局变量（重复的不再赘述）：
+* OneDriveSharePwd: OneDrive链接的密码
+  
+使用方法和上面类似。
+

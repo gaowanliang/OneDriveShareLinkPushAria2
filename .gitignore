@@ -1,6 +1,6 @@
 .history
 .dev_profile
 local-chromium
-a.html
+*.html
 __pycache__
 example.png
