@@ -65,7 +65,7 @@ def havePwdDownloadFiles(iurl, password, aria2URL, token, start=1, num=-1):
     print("正在启动无头浏览器模拟输入密码")
     asyncio.get_event_loop().run_until_complete(main(iurl, password))
     print("无头浏览器关闭，正在获取文件列表")
-    header['cookie'] = pheader["set-cookie"]
+    header['cookie'] = pheader
     downloadFiles(url, None, 0, aria2URL, token, start=start, num=num)
 
 
