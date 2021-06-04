@@ -35,23 +35,26 @@ header = {
 
 
 def getFiles(originalPath, req, layers, _id=0):
+    # new_url = urllib.parse.urlparse(originalPath)
+    # header["host"] = new_url.netloc
+    # print(header)
     if req == None:
         req = requests.session()
     reqf = req.get(originalPath, headers=header)
+    f = open("a.html", "w+", encoding="utf-8")
+    f.write(reqf.text)
+    f.close()
     if ',"FirstRow"' not in reqf.text:
         print("\t"*layers, "这个文件夹没有文件")
+        exit()
         return 0
-
-    #f = open("a.html", "w+", encoding="utf-8")
-    # f.write(reqf.text)
-    # f.close()
 
     p = re.search(
         'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', reqf.text)
     jsonData = json.loads(p.group(1))
     # print(p.group(1))
     redURL = reqf.url
-    # new_url = urllib.parse.urlparse(redURL)
+
     query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(redURL).query))
     redsURL = redURL.split("/")
     # downloadURL = "/".join(redsURL[:-1])+"/download.aspx?UniqueId="
@@ -63,10 +66,11 @@ def getFiles(originalPath, req, layers, _id=0):
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
                   i['FileLeafRef'], "\t独特ID：", i["UniqueId"])
-            query['id'] = os.path.join(
-                query['id'],  i['FileLeafRef']).replace("\\", "/")
+            ff = query.copy()
+            ff['id'] = os.path.join(
+                ff['id'],  i['FileLeafRef']).replace("\\", "/")
             originalPath = "/".join(redsURL[:-1]) + \
-                "/onedrive.aspx?" + urllib.parse.urlencode(query)
+                "/onedrive.aspx?" + urllib.parse.urlencode(ff)
             # print(originalPath)
             fileCount += getFiles(originalPath, req, layers+1, _id=fileCount)
         else:
