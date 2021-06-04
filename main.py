@@ -46,7 +46,6 @@ def getFiles(originalPath, req, layers, _id=0):
     f.close()
     if ',"FirstRow"' not in reqf.text:
         print("\t"*layers, "这个文件夹没有文件")
-        exit()
         return 0
 
     p = re.search(
