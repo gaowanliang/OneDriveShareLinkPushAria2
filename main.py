@@ -71,7 +71,6 @@ def getFiles(originalPath, req, layers, _id=0):
                 ff['id'],  i['FileLeafRef']).replace("\\", "/")
             originalPath = "/".join(redsURL[:-1]) + \
                 "/onedrive.aspx?" + urllib.parse.urlencode(ff)
-            # print(originalPath)
             fileCount += getFiles(originalPath, req, layers+1, _id=fileCount)
         else:
             fileCount += 1
@@ -120,11 +119,11 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, start=1, num=-1, _
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
                   i['FileLeafRef'], "\t独特ID：", i["UniqueId"], "正在进入")
-            query['id'] = os.path.join(
-                query['id'],  i['FileLeafRef']).replace("\\", "/")
+            ff = query.copy()
+            ff['id'] = os.path.join(
+                ff['id'],  i['FileLeafRef']).replace("\\", "/")
             originalPath = "/".join(redsURL[:-1]) + \
-                "/onedrive.aspx?" + urllib.parse.urlencode(query)
-            # print(originalPath)
+                "/onedrive.aspx?" + urllib.parse.urlencode(ff)
             fileCount += downloadFiles(originalPath, req, layers+1,
                                        aria2URL, token, _id=fileCount, start=start, num=num)
         else:
