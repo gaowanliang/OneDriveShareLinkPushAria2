@@ -20,7 +20,7 @@ def start(update, context):
 
 
 def stop(update, context):
-    if update.effective_chat.id == 1716365929:
+    if update.effective_chat.id == 0:
         context.bot.send_message(
             chat_id=update.effective_chat.id, text="机器人已停止")
         updater.stop()
