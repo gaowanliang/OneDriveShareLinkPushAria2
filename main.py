@@ -8,7 +8,7 @@ from urllib import parse
 import requests
 import os
 
-OneDriveShareURL = "https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh"
+OneDriveShareURL = "https://stankyo.sharepoint.com/:f:/s/SK002/Egpj3auYf1VOj_TFCG6OWmgB8_okYQQWUWpd-9R3_jIIzw?e=ug3p3V"
 
 aria2Link = "http://localhost:5800/jsonrpc"
 aria2Secret = "123456"
@@ -38,6 +38,9 @@ def getFiles(originalPath, req, layers, _id=0):
     # new_url = urllib.parse.urlparse(originalPath)
     # header["host"] = new_url.netloc
     # print(header)
+    isSharepoint = False
+    if "-my" not in originalPath:
+        isSharepoint = True
     if req == None:
         req = requests.session()
     reqf = req.get(originalPath, headers=header)
@@ -50,13 +53,16 @@ def getFiles(originalPath, req, layers, _id=0):
 
     p = re.search(
         'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', reqf.text)
-    jsonData = json.loads(p.group(1))
-    # print(p.group(1))
-    redURL = reqf.url
 
-    query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(redURL).query))
-    redsURL = redURL.split("/")
-    # downloadURL = "/".join(redsURL[:-1])+"/download.aspx?UniqueId="
+    jsonData = json.loads(p.group(1))
+
+    # print(p.group(1))
+    redirectURL = reqf.url
+
+    query = dict(urllib.parse.parse_qsl(
+        urllib.parse.urlsplit(redirectURL).query))
+    redirectSplitURL = redirectURL.split("/")
+    # downloadURL = "/".join(redirectSplitURL[:-1])+"/download.aspx?UniqueId="
 
     # print(query)
     fileCount = 0
@@ -65,11 +71,15 @@ def getFiles(originalPath, req, layers, _id=0):
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
                   i['FileLeafRef'], "\t独特ID：", i["UniqueId"])
-            ff = query.copy()
-            ff['id'] = os.path.join(
-                ff['id'],  i['FileLeafRef']).replace("\\", "/")
-            originalPath = "/".join(redsURL[:-1]) + \
-                "/onedrive.aspx?" + urllib.parse.urlencode(ff)
+            _query = query.copy()
+            _query['id'] = os.path.join(
+                _query['id'],  i['FileLeafRef']).replace("\\", "/")
+            if not isSharepoint:
+                originalPath = "/".join(redirectSplitURL[:-1]) + \
+                    "/onedrive.aspx?" + urllib.parse.urlencode(_query)
+            else:
+                originalPath = "/".join(redirectSplitURL[:-1]) + \
+                    "/AllItems.aspx?" + urllib.parse.urlencode(_query)
             fileCount += getFiles(originalPath, req, layers+1, _id=fileCount)
         else:
             fileCount += 1
@@ -83,24 +93,37 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, start=1, num=-1, _
         req = requests.session()
     # print(header)
     reqf = req.get(originalPath, headers=header)
+    if "-my" not in originalPath:
+        isSharepoint = True
 
     # f=open()
     if ',"FirstRow"' not in reqf.text:
         print("\t"*layers, "这个文件夹没有文件")
         return 0
 
-    p = re.search(
+    pat = re.search(
         'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', reqf.text)
-    jsonData = json.loads(p.group(1))
-    redURL = reqf.url
-    redsURL = redURL.split("/")
-    query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(redURL).query))
-    downloadURL = "/".join(redsURL[:-1])+"/download.aspx?UniqueId="
+    jsonData = json.loads(pat.group(1))
+    redirectURL = reqf.url
+    redirectSplitURL = redirectURL.split("/")
+    query = dict(urllib.parse.parse_qsl(
+        urllib.parse.urlsplit(redirectURL).query))
+    downloadURL = "/".join(redirectSplitURL[:-1])+"/download.aspx?UniqueId="
+    if isSharepoint:
+        pat = re.search('templateUrl":"(.*?)"', reqf.text)
+
+        downloadURL = pat.group(1)
+        downloadURL = urllib.parse.urlparse(downloadURL)
+        downloadURL = "{}://{}{}".format(downloadURL.scheme,
+                                         downloadURL.netloc, downloadURL.path).split("/")
+        downloadURL = "/".join(downloadURL[:-1]) + \
+            "/download.aspx?UniqueId="
+        print(downloadURL)
 
     # print(reqf.headers)
 
-    s2 = urllib.parse.urlparse(redURL)
-    header["referer"] = redURL
+    s2 = urllib.parse.urlparse(redirectURL)
+    header["referer"] = redirectURL
     header["cookie"] = reqf.headers["set-cookie"]
     header["authority"] = s2.netloc
 
@@ -118,11 +141,15 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, start=1, num=-1, _
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
                   i['FileLeafRef'], "\t独特ID：", i["UniqueId"], "正在进入")
-            ff = query.copy()
-            ff['id'] = os.path.join(
-                ff['id'],  i['FileLeafRef']).replace("\\", "/")
-            originalPath = "/".join(redsURL[:-1]) + \
-                "/onedrive.aspx?" + urllib.parse.urlencode(ff)
+            _query = query.copy()
+            _query['id'] = os.path.join(
+                _query['id'],  i['FileLeafRef']).replace("\\", "/")
+            if not isSharepoint:
+                originalPath = "/".join(redirectSplitURL[:-1]) + \
+                    "/onedrive.aspx?" + urllib.parse.urlencode(_query)
+            else:
+                originalPath = "/".join(redirectSplitURL[:-1]) + \
+                    "/AllItems.aspx?" + urllib.parse.urlencode(_query)
             fileCount += downloadFiles(originalPath, req, layers+1,
                                        aria2URL, token, _id=fileCount, start=start, num=num)
         else:
@@ -160,11 +187,11 @@ def getFilesHavePwd(originalPath, password):
         '__EVENTVALIDATION" value="(.*?)" />', r.text)
     __EVENTVALIDATION = p.group(1)
     s2 = parse.urlparse(originalPath)
-    redURL = originalPath
-    redsURL = redURL.split("/")
+    redirectURL = originalPath
+    redirectSplitURL = redirectURL.split("/")
     shareQuery = s2.path.split("/")[-1]
-    redsURL[-1] = "guestaccess.aspx?"+s2.query+"&share="+shareQuery
-    pwdURL = "/".join(redsURL)
+    redirectSplitURL[-1] = "guestaccess.aspx?"+s2.query+"&share="+shareQuery
+    pwdURL = "/".join(redirectSplitURL)
     print(pwdURL, r.headers)
     hewHeader = {
         'sec-ch-ua-mobile': '?0',
@@ -209,7 +236,7 @@ def getFilesHavePwd(originalPath, password):
 
 if __name__ == "__main__":
     if isDownload:
-        downloadFiles(OneDriveShareURL, aria2Link, aria2Secret,
+        downloadFiles(OneDriveShareURL, None, 0, aria2Link, aria2Secret,
                       start=downloadStart, num=downloadNum)
     else:
         getFiles(OneDriveShareURL, None, 0)

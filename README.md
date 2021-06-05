@@ -16,6 +16,7 @@ pyppeteer==0.2.5
   * 有下载密码的多文件推送
   * 嵌套文件夹的文件推送
   * 任意选择文件推送
+* xxx.sharepoint.com 下载链接的下载
 * xxx-my.sharepoint.cn 下载链接的下载(理论上支持)
 
 ## 无密码的链接
