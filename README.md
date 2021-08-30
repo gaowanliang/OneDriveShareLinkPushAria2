@@ -43,8 +43,7 @@ At this time, you need to use the download code for no password link, that is, [
 * aria2Link: aria2's rpc address, usually `http://localhost:Port/jsonrpc` if it's native
 * aria2Secret: the password of aria2
 * isDownload: whether to download or not, if `False`, only the file list is output
-* downloadStart: the number of the starting file to download, default is 1
-* downloadNum: the number of consecutive downloads of the file starting from downloadStart, -1 means all of them (when -1, downloadStart is ignored)
+* downloadNum: List of files to download, -1 means all of them 
 
 If you want to download the second file, you need `downloadNum="2"`
 
