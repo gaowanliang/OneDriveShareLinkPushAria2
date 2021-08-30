@@ -93,6 +93,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, start=1, num=-1, _
         req = requests.session()
     # print(header)
     reqf = req.get(originalPath, headers=header)
+    isSharepoint = False
     if "-my" not in originalPath:
         isSharepoint = True
 
