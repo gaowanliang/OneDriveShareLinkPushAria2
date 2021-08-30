@@ -14,8 +14,7 @@ aria2Link = "http://localhost:5800/jsonrpc"
 aria2Secret = "123456"
 
 isDownload = False
-downloadStart = 1
-downloadNum = -1
+downloadNum = "1,2-4,5"  # 1,2,3,4,5
 
 
 header = {
@@ -88,7 +87,7 @@ def getFiles(originalPath, req, layers, _id=0):
     return fileCount
 
 
-def downloadFiles(originalPath, req, layers, aria2URL, token, start=1, num=-1, _id=0):
+def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0):
     if req == None:
         req = requests.session()
     # print(header)
@@ -155,7 +154,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, start=1, num=-1, _
                                        aria2URL, token, _id=fileCount, start=start, num=num)
         else:
             fileCount += 1
-            if num == -1 or start <= fileCount+_id < start+num:
+            if num == -1 or fileCount+_id in num:
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
                       (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
                 cc = downloadURL+(i["UniqueId"][1:-1].lower())
@@ -235,10 +234,25 @@ def getFilesHavePwd(originalPath, password):
     print(r.headers, r.text)
 
 
+def wildcardsMatchFiles(text):
+    fileNum = []
+    data = text.split(",")
+    for v in data:
+        i = v.split("-")
+        if len(i) < 2:
+            fileNum.append(int(i[0]))
+        else:
+            for j in range(int(i[0]), int(i[1])+1):
+                fileNum.append(j)
+    print(fileNum)
+    fileNum = list(set(fileNum))
+    return sorted(fileNum)
+
+
 if __name__ == "__main__":
     if isDownload:
-        downloadFiles(OneDriveShareURL, None, 0, aria2Link, aria2Secret,
-                      start=downloadStart, num=downloadNum)
+        downloadFiles(OneDriveShareURL, None, 0, aria2Link,
+                      aria2Secret, num=downloadNum)
     else:
         getFiles(OneDriveShareURL, None, 0)
     #

@@ -11,8 +11,7 @@ aria2Link = "http://localhost:5800/jsonrpc"
 aria2Secret = "123456"
 
 isDownload = False
-downloadStart = 1
-downloadNum = -1
+downloadNum = "1,2-4,5"  # 1,2,3,4,5
 
 
 os.environ['PYPPETEER_HOME'] = os.path.split(os.path.realpath(__file__))[0]
@@ -72,6 +71,6 @@ def havePwdDownloadFiles(iurl, password, aria2URL, token, start=1, num=-1):
 if __name__ == "__main__":
     if isDownload:
         havePwdDownloadFiles(OneDriveShareURL, OneDriveSharePwd, aria2Link,
-                             aria2Secret,  start=downloadStart, num=downloadNum)
+                             aria2Secret, num=downloadNum)
     else:
         havePwdGetFiles(OneDriveShareURL, OneDriveSharePwd)

@@ -1,5 +1,5 @@
 # OneDriveShareLinkPushAria2
-Extract the download URL from OneDrive or SharePoint share link and push it to aria2
+Extract download URLs from OneDrive or SharePoint share links and push them to aria2, even on systems without a GUI.
 
 从OneDrive或SharePoint共享链接提取下载URL并将其推送到aria2，即使在无图形界面的系统中依然可以使用。
 
@@ -46,9 +46,13 @@ At this time, you need to use the download code for no password link, that is, [
 * downloadStart: the number of the starting file to download, default is 1
 * downloadNum: the number of consecutive downloads of the file starting from downloadStart, -1 means all of them (when -1, downloadStart is ignored)
 
-If you want to download the second file, you need `downloadStart=2` and `downloadNum=1`
+If you want to download the second file, you need `downloadNum="2"`
 
-If you want to download the second and third files, you need `downloadStart=2`, `downloadNum=2`
+If you want to download the second and third file, you need `downloadNum="2-3"`
+
+If you want to download the second, third, fourth, seventh file, you need `downloadNum="2-4,7"`
+
+and so on.
 
 After modifying, make sure the target aria2 is on and execute `python3 main.py`
 
@@ -61,12 +65,15 @@ After modifying, make sure the target aria2 is on and execute `python3 main.py`
 * aria2Link: aria2 的rpc地址，如果是本机，一般是 `http://localhost:端口号/jsonrpc`
 * aria2Secret: aria2 的密码
 * isDownload: 是否下载，如果是`False`，只输出文件列表
-* downloadStart: 下载起始文件的号码，默认为1
-* downloadNum: 从downloadStart开始的文件连续下载多少个，-1表示全部下载（-1时，无视downloadStart）
+* downloadNum: 要下载的文件列表，-1表示全部下载
 
-如果想要下载第二个文件，则需要`downloadStart=2`，`downloadNum=1`
+如果想要下载第二个文件，则需要`downloadNum="2"`
 
-如果想要下载第二、第三个文件，则需要`downloadStart=2`，`downloadNum=2`
+如果想要下载第二、第三个文件，则需要`downloadNum="2-3"`
+
+如果想要下载第二、第三、第四、第七个文件，则需要`downloadNum="2-4,7"`
+
+以此类推
 
 修改好后，确保目标aria2处于开启状态，执行`python3 main.py`
 
