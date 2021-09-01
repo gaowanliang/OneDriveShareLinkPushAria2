@@ -87,10 +87,12 @@ def getFiles(originalPath, req, layers, _id=0):
     return fileCount
 
 
-def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0):
+def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, originalDir=""):
     if req == None:
         req = requests.session()
     # print(header)
+    if originalDir == "":
+        originalDir = getAria2ConfigDir(aria2URL, token)
     reqf = req.get(originalPath, headers=header)
     isSharepoint = False
     if "-my" not in originalPath:
@@ -151,19 +153,22 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0):
                 originalPath = "/".join(redirectSplitURL[:-1]) + \
                     "/AllItems.aspx?" + urllib.parse.urlencode(_query)
             fileCount += downloadFiles(originalPath, req, layers+1,
-                                       aria2URL, token, num=num, _id=fileCount)
+                                       aria2URL, token, num=num, _id=fileCount, originalDir=originalDir)
         else:
             fileCount += 1
-            if num == -1 or fileCount+_id != num:
+            if num == -1 or(isinstance(num, list) and fileCount+_id in num):
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
                       (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
                 cc = downloadURL+(i["UniqueId"][1:-1].lower())
-                dd = dict(out=i["FileLeafRef"],  header=headerStr)
+                dd = dict(out=i["FileLeafRef"],  header=headerStr, dir=originalDir+str(
+                    query['id']).split('Documents', 1)[1])
                 jsonreq = json.dumps({'jsonrpc': '2.0', 'id': 'qwer',
                                       'method': 'aria2.addUri',
                                       "params": ["token:"+token, [cc], dd]})
+
                 c = requests.post(aria2URL, data=jsonreq)
                 pprint(json.loads(c.text))
+                # exit(0)
             else:
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t非目标文件" %
                       (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
@@ -247,6 +252,13 @@ def wildcardsMatchFiles(text):
     print(fileNum)
     fileNum = list(set(fileNum))
     return sorted(fileNum)
+
+
+def getAria2ConfigDir(aria2URL, token):
+    jsonreq = json.dumps({'jsonrpc': '2.0', 'id': 'qwer',
+                          'method': 'aria2.getGlobalOption', "params": ["token:"+token]})
+    c = requests.post(aria2URL, data=jsonreq)
+    return json.loads(c.text)["result"]["dir"]
 
 
 if __name__ == "__main__":

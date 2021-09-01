@@ -59,13 +59,13 @@ def havePwdGetFiles(iurl, password):
     print(getFiles(url, None, 0))
 
 
-def havePwdDownloadFiles(iurl, password, aria2URL, token, start=1, num=-1):
+def havePwdDownloadFiles(iurl, password, aria2URL, token, num=-1):
     global header
     print("正在启动无头浏览器模拟输入密码")
     asyncio.get_event_loop().run_until_complete(main(iurl, password))
     print("无头浏览器关闭，正在获取文件列表")
     header['cookie'] = pheader
-    downloadFiles(url, None, 0, aria2URL, token, start=start, num=num)
+    downloadFiles(url, None, 0, aria2URL, token, num=num)
 
 
 if __name__ == "__main__":
