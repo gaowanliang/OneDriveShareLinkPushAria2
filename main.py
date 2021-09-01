@@ -10,7 +10,7 @@ import os
 
 OneDriveShareURL = "https://stankyo.sharepoint.com/:f:/s/SK002/Egpj3auYf1VOj_TFCG6OWmgB8_okYQQWUWpd-9R3_jIIzw?e=ug3p3V"
 
-aria2Link = "http://localhost:5800/jsonrpc"
+aria2Link = "http://localhost:6800/jsonrpc"
 aria2Secret = "123456"
 
 isDownload = False
@@ -151,10 +151,10 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0):
                 originalPath = "/".join(redirectSplitURL[:-1]) + \
                     "/AllItems.aspx?" + urllib.parse.urlencode(_query)
             fileCount += downloadFiles(originalPath, req, layers+1,
-                                       aria2URL, token, _id=fileCount, start=start, num=num)
+                                       aria2URL, token, num=num, _id=fileCount)
         else:
             fileCount += 1
-            if num == -1 or fileCount+_id in num:
+            if num == -1 or fileCount+_id != num:
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
                       (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
                 cc = downloadURL+(i["UniqueId"][1:-1].lower())
