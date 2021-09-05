@@ -20,7 +20,7 @@ At present, this program supports the following download methods:
   * Downloading multiple files with password for shared links
   * Download of files in nested folders
   * Download any file of your choice
-  * Viewing of more than 30 file lists
+  * Traversal view and download for multiple files (more than 30) of shared links
 * xxx.sharepoint.com Downloads with share links
 * xxx-my.sharepoint.cn Download of share links (theoretically supported)
 
