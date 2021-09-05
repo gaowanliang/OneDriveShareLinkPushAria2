@@ -1,9 +1,9 @@
 [简体中文](docs/Readme_zh-cn.md)
 
 # OneDriveShareLinkPushAria2
-Extract download URLs from OneDrive or SharePoint share links and push them to aria2, even on systems without a GUI.
+Extract download URLs from OneDrive or SharePoint share links and push them to aria2, even on systems without a GUI (such as Linux).
 
-从OneDrive或SharePoint共享链接提取下载URL并将其推送到aria2，即使在无图形界面的系统中依然可以使用。
+从OneDrive或SharePoint共享链接提取下载URL并将其推送到aria2，即使在无图形界面的系统中(如Linux)依然可以使用。
 
 # Dependent
 
@@ -20,7 +20,7 @@ At present, this program supports the following download methods:
   * Downloading multiple files with password for shared links
   * Download of files in nested folders
   * Download any file of your choice
-  * Viewing of more than 30 file lists (download mode planning)
+  * Viewing of more than 30 file lists
 * xxx.sharepoint.com Downloads with share links
 * xxx-my.sharepoint.cn Download of share links (theoretically supported)
 
@@ -63,3 +63,5 @@ Usage is similar to the above.
 
 # Note
 Before you use it, clone the whole project with `git clone https://github.com/gaowanliang/OneDriveShareLinkPushAria2.git` to use it. havepassword.py depends on main.py, if you want to use the version that requires a password If you want to use a version that requires a password, you need to `pip install pyppeteer`
+
+The basic functions of this program have been realized. For a long time, if the software is not unusable, it will not be maintained. If there is a running problem, please bring a download link when raising the issue. The bug type issue that does not provide a download link will not be solved.

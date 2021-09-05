@@ -10,7 +10,7 @@ import requests
 import os
 import copy
 
-OneDriveShareURL = "https://gw6-my.sharepoint.com/:f:/g/personal/admin_gwliang_com/EuVr3Xt3csJMhnBmmK1Yw7wBUH9VQ3UFHHPxkdFJhHRpVQ?e=CAQLWc"
+OneDriveShareURL = "https://acgmi-my.sharepoint.com/:f:/g/personal/support_acgmi_club/EpSr_7JeS85CipoL4p0A_tgBe-mWXj3SCnWV1qihc29IpQ?e=8DpGN6"
 
 aria2Link = "http://localhost:6800/jsonrpc"
 aria2Secret = "123456"
@@ -61,29 +61,34 @@ def getFiles(originalPath, req, layers, _id=0):
         urllib.parse.urlsplit(redirectURL).query))
     redirectSplitURL = redirectURL.split("/")
 
-    relativeUrl = ""
+    relativeFolder = ""
     rootFolder = query["id"]
     for i in rootFolder.split("/"):
         if i != "Documents":
-            relativeUrl += i+"/"
+            relativeFolder += i+"/"
         else:
-            relativeUrl += i
+            relativeFolder += i
             break
-    relativeUrl = parse.quote(relativeUrl).replace("/", "%2F")
-    rootFolderUrl = parse.quote(rootFolder).replace("/", "%2F")
+    relativeUrl = parse.quote(relativeFolder).replace(
+        "/", "%2F").replace("_", "%5F").replace("-", "%2D")
+    rootFolderUrl = parse.quote(rootFolder).replace(
+        "/", "%2F").replace("_", "%5F").replace("-", "%2D")
 
-    graphqlVar = '{"query":"query (\n        $listServerRelativeUrl: String!,$renderListDataAsStreamParameters: RenderListDataAsStreamParameters!,$renderListDataAsStreamQueryString: String!\n        )\n      {\n      \n      legacy {\n      \n      renderListDataAsStream(\n      listServerRelativeUrl: $listServerRelativeUrl,\n      parameters: $renderListDataAsStreamParameters,\n      queryString: $renderListDataAsStreamQueryString\n      )\n    }\n      \n      \n  perf {\n    executionTime\n    overheadTime\n    parsingTime\n    queryCount\n    validationTime\n    resolvers {\n      name\n      queryCount\n      resolveTime\n      waitTime\n    }\n  }\n    }","variables":{"listServerRelativeUrl":"/personal/admin_gwliang_com/Documents","renderListDataAsStreamParameters":{"renderOptions":5707527,"allowMultipleValueFilterForTaxonomyFields":true,"addRequiredFields":true,"folderServerRelativeUrl":"%s"},"renderListDataAsStreamQueryString":"@a1=\'%s}\'&RootFolder=%s}&TryNewExperienceSingle=TRUE"}}' % (rootFolder, relativeUrl, rootFolderUrl)
+    graphqlVar = '{"query":"query (\n        $listServerRelativeUrl: String!,$renderListDataAsStreamParameters: RenderListDataAsStreamParameters!,$renderListDataAsStreamQueryString: String!\n        )\n      {\n      \n      legacy {\n      \n      renderListDataAsStream(\n      listServerRelativeUrl: $listServerRelativeUrl,\n      parameters: $renderListDataAsStreamParameters,\n      queryString: $renderListDataAsStreamQueryString\n      )\n    }\n      \n      \n  perf {\n    executionTime\n    overheadTime\n    parsingTime\n    queryCount\n    validationTime\n    resolvers {\n      name\n      queryCount\n      resolveTime\n      waitTime\n    }\n  }\n    }","variables":{"listServerRelativeUrl":"%s","renderListDataAsStreamParameters":{"renderOptions":5707527,"allowMultipleValueFilterForTaxonomyFields":true,"addRequiredFields":true,"folderServerRelativeUrl":"%s"},"renderListDataAsStreamQueryString":"@a1=\'%s\'&RootFolder=%s&TryNewExperienceSingle=TRUE"}}' % (relativeFolder, rootFolder, relativeUrl, rootFolderUrl)
 
+    # print(graphqlVar)
     s2 = urllib.parse.urlparse(redirectURL)
     tempHeader = copy.deepcopy(header)
     tempHeader["referer"] = redirectURL
     tempHeader["cookie"] = reqf.headers["set-cookie"]
     tempHeader["authority"] = s2.netloc
     tempHeader["content-type"] = "application/json;odata=verbose"
+    # print(redirectSplitURL)
 
     graphqlReq = req.post(
         "/".join(redirectSplitURL[:-3])+"/_api/v2.1/graphql", data=graphqlVar.encode('utf-8'), headers=tempHeader)
     graphqlReq = json.loads(graphqlReq.text)
+    # print(graphqlReq)
     if "NextHref" in graphqlReq["data"]["legacy"]["renderListDataAsStream"]["ListData"]:
         nextHref = graphqlReq[
             "data"]["legacy"]["renderListDataAsStream"]["ListData"]["NextHref"]+"&@a1=%s&TryNewExperienceSingle=TRUE" % (
@@ -156,9 +161,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, ori
         print("\t"*layers, "这个文件夹没有文件")
         return 0
 
-    pat = re.search(
-        'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', reqf.text)
-    jsonData = json.loads(pat.group(1))
+    filesData = []
     redirectURL = reqf.url
     redirectSplitURL = redirectURL.split("/")
     query = dict(urllib.parse.parse_qsl(
@@ -173,7 +176,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, ori
                                          downloadURL.netloc, downloadURL.path).split("/")
         downloadURL = "/".join(downloadURL[:-1]) + \
             "/download.aspx?UniqueId="
-        print(downloadURL)
+        # print(downloadURL)
 
     # print(reqf.headers)
 
@@ -190,9 +193,72 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, ori
         # print(key+':'+str(value))
         headerStr += key+':'+str(value)+"\n"
 
+
+    relativeFolder = ""
+    rootFolder = query["id"]
+    for i in rootFolder.split("/"):
+        if i != "Documents":
+            relativeFolder += i+"/"
+        else:
+            relativeFolder += i
+            break
+    relativeUrl = parse.quote(relativeFolder).replace(
+        "/", "%2F").replace("_", "%5F").replace("-", "%2D")
+    rootFolderUrl = parse.quote(rootFolder).replace(
+        "/", "%2F").replace("_", "%5F").replace("-", "%2D")
+
+    graphqlVar = '{"query":"query (\n        $listServerRelativeUrl: String!,$renderListDataAsStreamParameters: RenderListDataAsStreamParameters!,$renderListDataAsStreamQueryString: String!\n        )\n      {\n      \n      legacy {\n      \n      renderListDataAsStream(\n      listServerRelativeUrl: $listServerRelativeUrl,\n      parameters: $renderListDataAsStreamParameters,\n      queryString: $renderListDataAsStreamQueryString\n      )\n    }\n      \n      \n  perf {\n    executionTime\n    overheadTime\n    parsingTime\n    queryCount\n    validationTime\n    resolvers {\n      name\n      queryCount\n      resolveTime\n      waitTime\n    }\n  }\n    }","variables":{"listServerRelativeUrl":"%s","renderListDataAsStreamParameters":{"renderOptions":5707527,"allowMultipleValueFilterForTaxonomyFields":true,"addRequiredFields":true,"folderServerRelativeUrl":"%s"},"renderListDataAsStreamQueryString":"@a1=\'%s\'&RootFolder=%s&TryNewExperienceSingle=TRUE"}}' % (relativeFolder, rootFolder, relativeUrl, rootFolderUrl)
+
+    # print(graphqlVar)
+    s2 = urllib.parse.urlparse(redirectURL)
+    tempHeader = copy.deepcopy(header)
+    tempHeader["referer"] = redirectURL
+    tempHeader["cookie"] = reqf.headers["set-cookie"]
+    tempHeader["authority"] = s2.netloc
+    tempHeader["content-type"] = "application/json;odata=verbose"
+    # print(redirectSplitURL)
+
+    graphqlReq = req.post(
+        "/".join(redirectSplitURL[:-3])+"/_api/v2.1/graphql", data=graphqlVar.encode('utf-8'), headers=tempHeader)
+    graphqlReq = json.loads(graphqlReq.text)
+    # print(graphqlReq)
+    if "NextHref" in graphqlReq["data"]["legacy"]["renderListDataAsStream"]["ListData"]:
+        nextHref = graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ListData"]["NextHref"]+"&@a1=%s&TryNewExperienceSingle=TRUE" % (
+            "%27"+relativeUrl+"%27")
+        filesData.extend(graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
+        # print(filesData)
+
+        listViewXml = graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ViewMetadata"]["ListViewXml"]
+        renderListDataAsStreamVar = '{"parameters":{"__metadata":{"type":"SP.RenderListDataParameters"},"RenderOptions":1216519,"ViewXml":"%s","AllowMultipleValueFilterForTaxonomyFields":true,"AddRequiredFields":true}}' % (
+            listViewXml).replace('"', '\\"')
+        # print(renderListDataAsStreamVar, nextHref,1)
+
+        # print(listViewXml)
+
+        graphqlReq = req.post(
+            "/".join(redirectSplitURL[:-3])+"/_api/web/GetListUsingPath(DecodedUrl=@a1)/RenderListDataAsStream"+nextHref, data=renderListDataAsStreamVar.encode('utf-8'), headers=tempHeader)
+        graphqlReq = json.loads(graphqlReq.text)
+        # print(graphqlReq)
+
+        while "NextHref" in graphqlReq["ListData"]:
+            nextHref = graphqlReq["ListData"]["NextHref"]+"&@a1=%s&TryNewExperienceSingle=TRUE" % (
+                "%27"+relativeUrl+"%27")
+            filesData.extend(graphqlReq["ListData"]["Row"])
+            graphqlReq = req.post(
+                "/".join(redirectSplitURL[:-3])+"/_api/web/GetListUsingPath(DecodedUrl=@a1)/RenderListDataAsStream"+nextHref, data=renderListDataAsStreamVar.encode('utf-8'), headers=tempHeader)
+            # print(graphqlReq.text)
+            graphqlReq = json.loads(graphqlReq.text)
+            # print(graphqlReq)
+        filesData.extend(graphqlReq["ListData"]["Row"])
+    else:
+        filesData = filesData.extend(graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
+
     fileCount = 0
-    # print(headerStr)
-    for i in jsonData:
+    for i in filesData:
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
                   i['FileLeafRef'], "\t独特ID：", i["UniqueId"], "正在进入")
