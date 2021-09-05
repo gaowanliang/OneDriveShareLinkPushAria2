@@ -7,7 +7,7 @@ from pprint import pprint
 OneDriveShareURL = "https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r"
 OneDriveSharePwd = "xkx"
 
-aria2Link = "http://localhost:5800/jsonrpc"
+aria2Link = "http://localhost:6800/jsonrpc"
 aria2Secret = "123456"
 
 isDownload = False

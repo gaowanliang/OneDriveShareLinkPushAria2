@@ -2,13 +2,15 @@ import json
 import re
 import urllib
 import urllib.request
+
 from pprint import pprint
 from urllib import parse
 
 import requests
 import os
+import copy
 
-OneDriveShareURL = "https://stankyo.sharepoint.com/:f:/s/SK002/Egpj3auYf1VOj_TFCG6OWmgB8_okYQQWUWpd-9R3_jIIzw?e=ug3p3V"
+OneDriveShareURL = "https://gw6-my.sharepoint.com/:f:/g/personal/admin_gwliang_com/EuVr3Xt3csJMhnBmmK1Yw7wBUH9VQ3UFHHPxkdFJhHRpVQ?e=CAQLWc"
 
 aria2Link = "http://localhost:6800/jsonrpc"
 aria2Secret = "123456"
@@ -43,17 +45,14 @@ def getFiles(originalPath, req, layers, _id=0):
     if req == None:
         req = requests.session()
     reqf = req.get(originalPath, headers=header)
-    f = open("a.html", "w+", encoding="utf-8")
-    f.write(reqf.text)
-    f.close()
+    # f = open("a.html", "w+", encoding="utf-8")
+    # f.write(reqf.text)
+    # f.close()
     if ',"FirstRow"' not in reqf.text:
         print("\t"*layers, "这个文件夹没有文件")
         return 0
 
-    p = re.search(
-        'g_listData = {"wpq":"","Templates":{},"ListData":{ "Row" : ([\s\S]*?),"FirstRow"', reqf.text)
-
-    jsonData = json.loads(p.group(1))
+    filesData = []
 
     # print(p.group(1))
     redirectURL = reqf.url
@@ -61,12 +60,66 @@ def getFiles(originalPath, req, layers, _id=0):
     query = dict(urllib.parse.parse_qsl(
         urllib.parse.urlsplit(redirectURL).query))
     redirectSplitURL = redirectURL.split("/")
-    # downloadURL = "/".join(redirectSplitURL[:-1])+"/download.aspx?UniqueId="
 
-    # print(query)
+    relativeUrl = ""
+    rootFolder = query["id"]
+    for i in rootFolder.split("/"):
+        if i != "Documents":
+            relativeUrl += i+"/"
+        else:
+            relativeUrl += i
+            break
+    relativeUrl = parse.quote(relativeUrl).replace("/", "%2F")
+    rootFolderUrl = parse.quote(rootFolder).replace("/", "%2F")
+
+    graphqlVar = '{"query":"query (\n        $listServerRelativeUrl: String!,$renderListDataAsStreamParameters: RenderListDataAsStreamParameters!,$renderListDataAsStreamQueryString: String!\n        )\n      {\n      \n      legacy {\n      \n      renderListDataAsStream(\n      listServerRelativeUrl: $listServerRelativeUrl,\n      parameters: $renderListDataAsStreamParameters,\n      queryString: $renderListDataAsStreamQueryString\n      )\n    }\n      \n      \n  perf {\n    executionTime\n    overheadTime\n    parsingTime\n    queryCount\n    validationTime\n    resolvers {\n      name\n      queryCount\n      resolveTime\n      waitTime\n    }\n  }\n    }","variables":{"listServerRelativeUrl":"/personal/admin_gwliang_com/Documents","renderListDataAsStreamParameters":{"renderOptions":5707527,"allowMultipleValueFilterForTaxonomyFields":true,"addRequiredFields":true,"folderServerRelativeUrl":"%s"},"renderListDataAsStreamQueryString":"@a1=\'%s}\'&RootFolder=%s}&TryNewExperienceSingle=TRUE"}}' % (rootFolder, relativeUrl, rootFolderUrl)
+
+    s2 = urllib.parse.urlparse(redirectURL)
+    tempHeader = copy.deepcopy(header)
+    tempHeader["referer"] = redirectURL
+    tempHeader["cookie"] = reqf.headers["set-cookie"]
+    tempHeader["authority"] = s2.netloc
+    tempHeader["content-type"] = "application/json;odata=verbose"
+
+    graphqlReq = req.post(
+        "/".join(redirectSplitURL[:-3])+"/_api/v2.1/graphql", data=graphqlVar.encode('utf-8'), headers=tempHeader)
+    graphqlReq = json.loads(graphqlReq.text)
+    if "NextHref" in graphqlReq["data"]["legacy"]["renderListDataAsStream"]["ListData"]:
+        nextHref = graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ListData"]["NextHref"]+"&@a1=%s&TryNewExperienceSingle=TRUE" % (
+            "%27"+relativeUrl+"%27")
+        filesData.extend(graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
+        # print(filesData)
+
+        listViewXml = graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ViewMetadata"]["ListViewXml"]
+        renderListDataAsStreamVar = '{"parameters":{"__metadata":{"type":"SP.RenderListDataParameters"},"RenderOptions":1216519,"ViewXml":"%s","AllowMultipleValueFilterForTaxonomyFields":true,"AddRequiredFields":true}}' % (
+            listViewXml).replace('"', '\\"')
+        # print(renderListDataAsStreamVar, nextHref,1)
+
+        # print(listViewXml)
+
+        graphqlReq = req.post(
+            "/".join(redirectSplitURL[:-3])+"/_api/web/GetListUsingPath(DecodedUrl=@a1)/RenderListDataAsStream"+nextHref, data=renderListDataAsStreamVar.encode('utf-8'), headers=tempHeader)
+        graphqlReq = json.loads(graphqlReq.text)
+        # print(graphqlReq)
+
+        while "NextHref" in graphqlReq["ListData"]:
+            nextHref = graphqlReq["ListData"]["NextHref"]+"&@a1=%s&TryNewExperienceSingle=TRUE" % (
+                "%27"+relativeUrl+"%27")
+            filesData.extend(graphqlReq["ListData"]["Row"])
+            graphqlReq = req.post(
+                "/".join(redirectSplitURL[:-3])+"/_api/web/GetListUsingPath(DecodedUrl=@a1)/RenderListDataAsStream"+nextHref, data=renderListDataAsStreamVar.encode('utf-8'), headers=tempHeader)
+            # print(graphqlReq.text)
+            graphqlReq = json.loads(graphqlReq.text)
+            # print(graphqlReq)
+        filesData.extend(graphqlReq["ListData"]["Row"])
+    else:
+        filesData = filesData.extend(graphqlReq[
+            "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
     fileCount = 0
-
-    for i in jsonData:
+    for i in filesData:
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
                   i['FileLeafRef'], "\t独特ID：", i["UniqueId"])
