@@ -10,7 +10,7 @@ import requests
 import os
 import copy
 
-OneDriveShareURL = "https://acgmi-my.sharepoint.com/:f:/g/personal/support_acgmi_club/EpSr_7JeS85CipoL4p0A_tgBe-mWXj3SCnWV1qihc29IpQ?e=8DpGN6"
+OneDriveShareURL = "https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh"
 
 aria2Link = "http://localhost:6800/jsonrpc"
 aria2Secret = "123456"
@@ -121,7 +121,7 @@ def getFiles(originalPath, req, layers, _id=0):
             # print(graphqlReq)
         filesData.extend(graphqlReq["ListData"]["Row"])
     else:
-        filesData = filesData.extend(graphqlReq[
+        filesData.extend(graphqlReq[
             "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
     fileCount = 0
     for i in filesData:
@@ -254,7 +254,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, ori
             # print(graphqlReq)
         filesData.extend(graphqlReq["ListData"]["Row"])
     else:
-        filesData = filesData.extend(graphqlReq[
+        filesData.extend(graphqlReq[
             "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
 
     fileCount = 0
