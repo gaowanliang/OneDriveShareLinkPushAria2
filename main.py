@@ -145,7 +145,7 @@ def getFiles(originalPath, req, layers, _id=0):
     return fileCount
 
 
-def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, originalDir=""):
+def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, originalDir=""):
     if req == None:
         req = requests.session()
     # print(header)
@@ -192,7 +192,6 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, ori
     for key, value in header.items():
         # print(key+':'+str(value))
         headerStr += key+':'+str(value)+"\n"
-
 
     relativeFolder = ""
     rootFolder = query["id"]
@@ -275,7 +274,8 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=-1, _id=0, ori
                                        aria2URL, token, num=num, _id=fileCount, originalDir=originalDir)
         else:
             fileCount += 1
-            if num == -1 or(isinstance(num, list) and fileCount+_id in num):
+            print(num)
+            if num == [0] or (isinstance(num, list) and fileCount+_id in num):
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
                       (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
                 cc = downloadURL+(i["UniqueId"][1:-1].lower())
@@ -368,7 +368,7 @@ def wildcardsMatchFiles(text):
         else:
             for j in range(int(i[0]), int(i[1])+1):
                 fileNum.append(j)
-    print(fileNum)
+    # print(fileNum)
     fileNum = list(set(fileNum))
     return sorted(fileNum)
 
@@ -383,7 +383,7 @@ def getAria2ConfigDir(aria2URL, token):
 if __name__ == "__main__":
     if isDownload:
         downloadFiles(OneDriveShareURL, None, 0, aria2Link,
-                      aria2Secret, num=downloadNum)
+                      aria2Secret, num=wildcardsMatchFiles(downloadNum))
     else:
         getFiles(OneDriveShareURL, None, 0)
     #

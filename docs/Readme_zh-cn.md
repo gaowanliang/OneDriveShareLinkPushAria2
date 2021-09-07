@@ -30,7 +30,7 @@ pyppeteer==0.2.5
 * aria2Link: aria2 的rpc地址，如果是本机，一般是 `http://localhost:端口号/jsonrpc`
 * aria2Secret: aria2 的密码
 * isDownload: 是否下载，如果是`False`，只输出文件列表
-* downloadNum: 要下载的文件列表，-1表示全部下载
+* downloadNum: 要下载的文件列表，**0**表示全部下载
 
 如果想要下载第二个文件，则需要`downloadNum="2"`
 

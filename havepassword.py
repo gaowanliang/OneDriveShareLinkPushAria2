@@ -1,6 +1,6 @@
 import os
 import asyncio
-from main import getFiles, downloadFiles, header
+from main import getFiles, downloadFiles, header,wildcardsMatchFiles
 from pprint import pprint
 
 
@@ -71,6 +71,6 @@ def havePwdDownloadFiles(iurl, password, aria2URL, token, num=-1):
 if __name__ == "__main__":
     if isDownload:
         havePwdDownloadFiles(OneDriveShareURL, OneDriveSharePwd, aria2Link,
-                             aria2Secret, num=downloadNum)
+                             aria2Secret, num=wildcardsMatchFiles(downloadNum))
     else:
         havePwdGetFiles(OneDriveShareURL, OneDriveSharePwd)
