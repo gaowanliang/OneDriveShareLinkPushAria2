@@ -274,7 +274,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
                                        aria2URL, token, num=num, _id=fileCount, originalDir=originalDir)
         else:
             fileCount += 1
-            print(num)
+            # print(num)
             if num == [0] or (isinstance(num, list) and fileCount+_id in num):
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
                       (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
