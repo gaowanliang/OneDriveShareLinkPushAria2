@@ -64,11 +64,18 @@ def getFiles(originalPath, req, layers, _id=0):
     relativeFolder = ""
     rootFolder = query["id"]
     for i in rootFolder.split("/"):
-        if i != "Documents":
-            relativeFolder += i+"/"
+        if isSharepoint:
+            if i != "Shared Documents":
+                relativeFolder += i+"/"
+            else:
+                relativeFolder += i
+                break
         else:
-            relativeFolder += i
-            break
+            if i != "Documents":
+                relativeFolder += i+"/"
+            else:
+                relativeFolder += i
+                break
     relativeUrl = parse.quote(relativeFolder).replace(
         "/", "%2F").replace("_", "%5F").replace("-", "%2D")
     rootFolderUrl = parse.quote(rootFolder).replace(
@@ -196,11 +203,18 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
     relativeFolder = ""
     rootFolder = query["id"]
     for i in rootFolder.split("/"):
-        if i != "Documents":
-            relativeFolder += i+"/"
+        if isSharepoint:
+            if i != "Shared Documents":
+                relativeFolder += i+"/"
+            else:
+                relativeFolder += i
+                break
         else:
-            relativeFolder += i
-            break
+            if i != "Documents":
+                relativeFolder += i+"/"
+            else:
+                relativeFolder += i
+                break
     relativeUrl = parse.quote(relativeFolder).replace(
         "/", "%2F").replace("_", "%5F").replace("-", "%2D")
     rootFolderUrl = parse.quote(rootFolder).replace(
