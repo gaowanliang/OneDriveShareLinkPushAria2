@@ -21,6 +21,20 @@ pyppeteer==0.2.5
 
 **注意：Aria2本身不支持HTTP POST型的下载链接，而OneDrive文件夹打包下载为HTTP POST型的下载链接，所以本程序将不会支持OneDrive文件夹打包下载**
 
+## 输出文件列表
+
+使用以下命令输出文件列表到list.txt
+
+``` bash
+python main.py > list.txt
+```
+
+使用powershell运行此命令可能会输出乱码, 先运行以下命令即可修复
+
+``` bash
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
+
 ## 无密码的链接
 
 以 https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh 这个下载链接为例
