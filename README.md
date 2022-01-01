@@ -26,6 +26,20 @@ At present, this program supports the following download methods:
 
 **Note: aria2 itself does not support HTTP POST download links, while onedrive folder package download is HTTP POST download links, so this program will not support onedrive folder package download**
 
+## Output file list
+
+input this command then you can get file list in list.txt
+
+``` bash
+python main.py > list.txt
+```
+
+It maybe output gibberish in powershell, you can input this command before to fix
+
+``` bash
+[System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
+
 ## Without password for shared links
 
 Take this download link as an example:

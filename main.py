@@ -9,15 +9,22 @@ from urllib import parse
 import requests
 import os
 import copy
+import sys
+import io
 
-OneDriveShareURL = "https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh"
+from requests.models import codes
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
+
+OneDriveShareURL = "https://skillgod-my.sharepoint.com/:f:/g/personal/mib_niconico_icu/EgROIhHAdfNDol5t7KtzcfQBvVaROsHpQ7ZQaYvgriDLvQ?e=kzlLWB"
 
 aria2Link = "http://localhost:6800/jsonrpc"
-aria2Secret = "123456"
+aria2Secret = ""
 
 isDownload = False
-downloadNum = "1,2-4,5"  # 1,2,3,4,5
+downloadNum = "0"  # 1,2-4,5
 
+fileCount = 0
 
 header = {
     'sec-ch-ua-mobile': '?0',
@@ -36,6 +43,7 @@ header = {
 
 
 def getFiles(originalPath, req, layers, _id=0):
+    global fileCount
     # new_url = urllib.parse.urlparse(originalPath)
     # header["host"] = new_url.netloc
     # print(header)
@@ -130,7 +138,8 @@ def getFiles(originalPath, req, layers, _id=0):
     else:
         filesData.extend(graphqlReq[
             "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
-    fileCount = 0
+    # fileCount = 0
+    # 不重置文件计数
     for i in filesData:
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
@@ -144,15 +153,17 @@ def getFiles(originalPath, req, layers, _id=0):
             else:
                 originalPath = "/".join(redirectSplitURL[:-1]) + \
                     "/AllItems.aspx?" + urllib.parse.urlencode(_query)
-            fileCount += getFiles(originalPath, req, layers+1, _id=fileCount)
+            getFiles(originalPath, req, layers+1, _id=fileCount)
+            # fileCount += getFiles(originalPath, req, layers+1, _id=fileCount)
         else:
             fileCount += 1
             print("\t"*layers, "文件 [%d]：%s\t独特ID：%s" %
-                  (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
+                  (fileCount, i['FileLeafRef'],  i["UniqueId"]))
     return fileCount
 
 
 def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, originalDir=""):
+    global fileCount
     if req == None:
         req = requests.session()
     # print(header)
@@ -270,7 +281,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
         filesData.extend(graphqlReq[
             "data"]["legacy"]["renderListDataAsStream"]["ListData"]["Row"])
 
-    fileCount = 0
+    # fileCount = 0
     for i in filesData:
         if i['FSObjType'] == "1":
             print("\t"*layers, "文件夹：",
@@ -284,14 +295,16 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
             else:
                 originalPath = "/".join(redirectSplitURL[:-1]) + \
                     "/AllItems.aspx?" + urllib.parse.urlencode(_query)
-            fileCount += downloadFiles(originalPath, req, layers+1,
-                                       aria2URL, token, num=num, _id=fileCount, originalDir=originalDir)
+            downloadFiles(originalPath, req, layers+1,
+                          aria2URL, token, num=num, _id=fileCount, originalDir=originalDir)
+            # fileCount += downloadFiles(originalPath, req, layers+1,
+            #                            aria2URL, token, num=num, _id=fileCount, originalDir=originalDir)
         else:
             fileCount += 1
             # print(num)
-            if num == [0] or (isinstance(num, list) and fileCount+_id in num):
+            if num == [0] or (isinstance(num, list) and fileCount in num):
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
-                      (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
+                      (fileCount, i['FileLeafRef'],  i["UniqueId"]))
                 cc = downloadURL+(i["UniqueId"][1:-1].lower())
                 dd = dict(out=i["FileLeafRef"],  header=headerStr, dir=originalDir+str(
                     query['id']).split('Documents', 1)[1])
@@ -304,7 +317,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
                 # exit(0)
             else:
                 print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t非目标文件" %
-                      (fileCount+_id, i['FileLeafRef'],  i["UniqueId"]))
+                      (fileCount, i['FileLeafRef'],  i["UniqueId"]))
     return fileCount
 
 
