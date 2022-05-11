@@ -25,7 +25,7 @@ url = ""
 
 async def main(iurl, password):
     global pheader, url
-    browser = await launch()
+    browser = await launch(options={'args': ['--no-sandbox']})
     page = await browser.newPage()
     await page.goto(iurl, {'waitUntil': 'networkidle0'})
     await page.focus("input[id='txtPassword']")
