@@ -13,6 +13,7 @@ import sys
 import io
 
 from requests.models import codes
+from requests.adapters import HTTPAdapter, Retry
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
@@ -41,6 +42,11 @@ header = {
 # "https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh"
 # "https://cokemine-my.sharepoint.com/:f:/g/personal/cokemine_cokemine_onmicrosoft_com/EukJbTMXkhJDrPpNVgZM8oUBmywiHfYgL7TSySrAeokVRw?e=FMaVLz"
 
+def newSession():
+    s = requests.session()
+    retries = Retry(total=5, backoff_factor=0.1)
+    s.mount('http://', HTTPAdapter(max_retries=retries))
+    return s
 
 def getFiles(originalPath, req, layers, _id=0):
     global fileCount
@@ -51,7 +57,7 @@ def getFiles(originalPath, req, layers, _id=0):
     if "-my" not in originalPath:
         isSharepoint = True
     if req == None:
-        req = requests.session()
+        req = newSession()
     reqf = req.get(originalPath, headers=header)
     # f = open("a.html", "w+", encoding="utf-8")
     # f.write(reqf.text)
@@ -165,7 +171,7 @@ def getFiles(originalPath, req, layers, _id=0):
 def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, originalDir=""):
     global fileCount
     if req == None:
-        req = requests.session()
+        req = newSession()
     # print(header)
     if originalDir == "":
         originalDir = getAria2ConfigDir(aria2URL, token)
@@ -322,7 +328,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
 
 
 def getFilesHavePwd(originalPath, password):
-    req = requests.session()
+    req = newSession()
     req.cookies.update(header)
     r = req.get(originalPath)
     p = re.search(
