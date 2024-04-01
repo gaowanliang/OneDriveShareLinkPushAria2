@@ -17,7 +17,7 @@ from requests.adapters import HTTPAdapter, Retry
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
-OneDriveShareURL = "https://skillgod-my.sharepoint.com/:f:/g/personal/mib_niconico_icu/EgROIhHAdfNDol5t7KtzcfQBvVaROsHpQ7ZQaYvgriDLvQ?e=kzlLWB"
+OneDriveShareURL = "https://gw6-my.sharepoint.com/:f:/g/personal/admin_gwliang_com/Euc-u_neWMdCgr40jepUcFQB2EHh1PfMJt-oyPjXgpIjZQ?e=IjINgw"
 
 aria2Link = "http://localhost:6800/jsonrpc"
 aria2Secret = ""
@@ -59,12 +59,12 @@ def getFiles(originalPath, req, layers, _id=0):
     if req == None:
         req = newSession()
     reqf = req.get(originalPath, headers=header)
-    # f = open("a.html", "w+", encoding="utf-8")
-    # f.write(reqf.text)
-    # f.close()
-    if ',"FirstRow"' not in reqf.text:
-        print("\t"*layers, "这个文件夹没有文件")
-        return 0
+    f = open("a.html", "w+", encoding="utf-8")
+    f.write(reqf.text)
+    f.close()
+    # if ',"FirstRow"' not in reqf.text:
+    #     print("\t"*layers, "这个文件夹没有文件")
+    #     return 0
 
     filesData = []
 
@@ -148,8 +148,8 @@ def getFiles(originalPath, req, layers, _id=0):
     # 不重置文件计数
     for i in filesData:
         if i['FSObjType'] == "1":
-            print("\t"*layers, "文件夹：",
-                  i['FileLeafRef'], "\t独特ID：", i["UniqueId"])
+            print("\t"*layers, "Folder(文件夹): ",
+                  i['FileLeafRef'], "\tUnique ID: ", i["UniqueId"])
             _query = query.copy()
             _query['id'] = os.path.join(
                 _query['id'],  i['FileLeafRef']).replace("\\", "/")
@@ -163,7 +163,7 @@ def getFiles(originalPath, req, layers, _id=0):
             # fileCount += getFiles(originalPath, req, layers+1, _id=fileCount)
         else:
             fileCount += 1
-            print("\t"*layers, "文件 [%d]：%s\t独特ID：%s" %
+            print("\t"*layers, "Files(文件)[%d]: %s\tUnique ID: %s" %
                   (fileCount, i['FileLeafRef'],  i["UniqueId"]))
     return fileCount
 
@@ -181,9 +181,9 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
         isSharepoint = True
 
     # f=open()
-    if ',"FirstRow"' not in reqf.text:
-        print("\t"*layers, "这个文件夹没有文件")
-        return 0
+    # if ',"FirstRow"' not in reqf.text:
+    #     print("\t"*layers, "这个文件夹没有文件")
+    #     return 0
 
     filesData = []
     redirectURL = reqf.url
@@ -290,8 +290,8 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
     # fileCount = 0
     for i in filesData:
         if i['FSObjType'] == "1":
-            print("\t"*layers, "文件夹：",
-                  i['FileLeafRef'], "\t独特ID：", i["UniqueId"], "正在进入")
+            print("\t"*layers, "Folder(文件夹): ",
+                  i['FileLeafRef'], "\tUnique ID: ", i["UniqueId"], "Entering(正在进入)")
             _query = query.copy()
             _query['id'] = os.path.join(
                 _query['id'],  i['FileLeafRef']).replace("\\", "/")
@@ -309,7 +309,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
             fileCount += 1
             # print(num)
             if num == [0] or (isinstance(num, list) and fileCount in num):
-                print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t正在推送" %
+                print("\t"*layers, "File(文件) [%d]: %s\tUnique ID: %s\tPushing(正在推送)" %
                       (fileCount, i['FileLeafRef'],  i["UniqueId"]))
                 cc = downloadURL+(i["UniqueId"][1:-1].lower())
                 dd = dict(out=i["FileLeafRef"],  header=headerStr, dir=originalDir+str(
@@ -322,7 +322,7 @@ def downloadFiles(originalPath, req, layers, aria2URL, token, num=[0], _id=0, or
                 pprint(json.loads(c.text))
                 # exit(0)
             else:
-                print("\t"*layers, "文件 [%d]：%s\t独特ID：%s\t非目标文件" %
+                print("\t"*layers, "File(文件) [%d]: %s\tUnique ID: %s\tNon target files(非目标文件)" %
                       (fileCount, i['FileLeafRef'],  i["UniqueId"]))
     return fileCount
 
