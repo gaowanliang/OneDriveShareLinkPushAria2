@@ -5,3 +5,4 @@ local-chromium
 __pycache__
 example.png
 test
+*.txt
