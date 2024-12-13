@@ -22,6 +22,7 @@ OneDriveShareURL = "https://1drv.ms/f/c/5973e13d37fc66d0/EucPv2vQu4ZBq2FNh_Ara-k
 aria2Link = "http://127.0.0.1:6800/jsonrpc"
 aria2Secret = ""
 
+
 isDownload = False
 downloadNum = "0"  # 1,2-4,5
 
