@@ -1,7 +1,5 @@
 # OneDriveShareLinkPushAria2
 
-Extract download URLs from OneDrive or SharePoint share links and push them to aria2, even on systems without a GUI.
-
 从 OneDrive 或 SharePoint 共享链接提取下载 URL 并将其推送到 aria2，即使在无图形界面的系统中依然可以使用。
 
 # 依赖
@@ -9,6 +7,35 @@ Extract download URLs from OneDrive or SharePoint share links and push them to a
 requests==2.25.1
 
 pyppeteer==0.2.5
+
+# 配置 aria2
+
+## 安装 aria2
+
+macOS 系统:
+```bash
+brew install aria2
+```
+
+Ubuntu/Debian 系统:
+```bash
+sudo apt-get install aria2
+```
+
+CentOS/RHEL 系统:
+```bash
+sudo yum install aria2
+```
+
+Windows 系统:
+从 https://aria2.github.io/ 下载并安装 aria2
+
+## 配置 aria2 RPC
+
+启动 aria2 RPC 服务:
+```bash
+aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D -d <下载目录>
+```
 
 # 特点
 
@@ -27,10 +54,10 @@ pyppeteer==0.2.5
 
 ## 输出文件列表
 
-使用以下命令输出文件列表到 list.txt
+使用以下命令输出文件列表到 list.txt：
 
 ```bash
-python main.py > list.txt
+python main.py "https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh" > list.txt
 ```
 
 使用 powershell 运行此命令可能会输出乱码, 先运行以下命令即可修复
@@ -51,38 +78,48 @@ python main.py > list.txt
 
 ## 无密码的链接
 
-以 https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh 这个下载链接为例
+程序现在使用命令行参数。以下是可用的选项：
 
-此时需要使用无密码的下载代码，也就是[main.py](../main.py)，打开这个文件，可以看到有一些全局变量：
+- OneDrive URL：下载地址（必需参数）
+- `--aria2-link`：aria2 的 RPC 地址，默认为 `http://127.0.0.1:6800/jsonrpc`
+- `--aria2-secret`：aria2 的密码，默认为空
+- `--download`：是否下载，如果不指定则只输出文件列表
+- `--download-num`：要下载的文件列表，默认为 "0"（表示全部文件）
 
-- OneDriveShareURL: 下载地址，此处应该填写 https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh
-- aria2Link: aria2 的 rpc 地址，如果是本机，一般是 `http://localhost:端口号/jsonrpc`
-- aria2Secret: aria2 的密码
-- isDownload: 是否下载，如果是`False`，只输出文件列表
-- downloadNum: 要下载的文件列表，**0**表示全部下载
+如果要下载特定文件，使用 `--download-num` 选项：
 
-如果想要下载第二个文件，则需要`downloadNum="2"`
+- 下载第二个文件：`--download-num "2"`
+- 下载第二和第三个文件：`--download-num "2-3"`
+- 下载第二、第三、第四、第七个文件：`--download-num "2-4,7"`
 
-如果想要下载第二、第三个文件，则需要`downloadNum="2-3"`
+使用示例：
+```bash
+# 仅列出文件
+python main.py "你的-onedrive-分享链接"
 
-如果想要下载第二、第三、第四、第七个文件，则需要`downloadNum="2-4,7"`
+# 下载所有文件
+python main.py "你的-onedrive-分享链接" --download
 
-以此类推
+# 下载指定文件
+python main.py "你的-onedrive-分享链接" --download --download-num "2-4,7"
 
-修改好后，确保目标 aria2 处于开启状态，执行`python3 main.py`
+# 使用自定义 aria2 设置
+python main.py "你的-onedrive-分享链接" --download --aria2-link "http://localhost:6800/jsonrpc" --aria2-secret "你的密码"
+```
 
-## 有密码的链接
+## 有密码链接下载
 
-以 https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r 这个下载链接为例
+以下载链接为例：
+https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r
 
-此时需要使用有密码的下载代码，也就是[havepassword.py](../havepassword.py)，打开这个文件，可以看到有一些全局变量（重复的不再赘述）：
+此时需要使用有密码的下载代码，即 [havepassword.py](../havepassword.py)。打开这个文件，可以看到一些全局变量（重复的不再赘述）：
 
-- OneDriveSharePwd: OneDrive 链接的密码
+- OneDriveSharePwd：OneDrive 链接的密码
 
-使用方法和上面类似。
+使用方法与上面类似。
 
 # 注意
 
-使用前，使用 `git clone https://github.com/gaowanliang/OneDriveShareLinkPushAria2.git` 将项目整个克隆，才能使用，havepassword.py 依赖于 main.py，如果要使用需要密码的版本，需要 `pip install pyppeteer`
+使用前，需要使用 `git clone https://github.com/gaowanliang/OneDriveShareLinkPushAria2.git` 将项目整个克隆下来才能使用。havepassword.py 依赖于 main.py，如果要使用需要密码的版本，需要 `pip install pyppeteer`。
 
-此程序基本功能都已实现，之后很长的一段时间内，如果不是软件无法使用了，则不再维护，如有运行问题，请在提出 issue 时带上下载链接，不提供下载链接的 bug 类型的 issue 将不会解决。
+此程序基本功能都已实现，之后很长的一段时间内，如果不是软件无法使用了，则不再维护。如有运行问题，请在提出 issue 时带上下载链接，不提供下载链接的 bug 类型的 issue 将不会解决。
