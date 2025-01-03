@@ -12,6 +12,35 @@ requests==2.25.1
 
 pyppeteer==0.2.5
 
+# Setup aria2
+
+## Install aria2
+
+For macOS:
+```bash
+brew install aria2
+```
+
+For Ubuntu/Debian:
+```bash
+sudo apt-get install aria2
+```
+
+For CentOS/RHEL:
+```bash
+sudo yum install aria2
+```
+
+For Windows:
+Download and install aria2 from https://aria2.github.io/
+
+## Configure aria2 RPC
+
+Start aria2 with RPC:
+```bash
+aria2c --enable-rpc --rpc-listen-all=true --rpc-allow-origin-all -D -d <download-directory>
+```
+
 # Feature
 
 At present, this program supports the following download methods:
@@ -32,7 +61,7 @@ At present, this program supports the following download methods:
 input this command then you can get file list in list.txt
 
 ```bash
-python main.py > list.txt
+python main.py "https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh" > list.txt
 ```
 
 It maybe output gibberish in powershell, you can input this command before to fix
@@ -56,23 +85,34 @@ Take this download link as an example:
 
 https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh
 
-At this time, you need to use the download code for no password link, that is, [main.py](main.py). Open this file and you can see that there are some global variables:
+The program now uses command line arguments. Here are the available options:
 
-- OneDriveShareURL: The download address, which should be filled in here https://gitaccuacnz2-my.sharepoint.com/:f:/g/personal/mail_finderacg_com/EheQwACFhe9JuGUn4hlg9esBsKyk5jp9-Iz69kqzLLF5Xw?e=FG7SHh
-- aria2Link: aria2's rpc address, usually `http://localhost:Port/jsonrpc` if it's native
-- aria2Secret: the password of aria2
-- isDownload: whether to download or not, if `False`, only the file list is output
-- downloadNum: List of files to download, **0** means all of them
+- OneDrive URL: The download address (required argument)
+- `--aria2-link`: aria2's rpc address, default is `http://127.0.0.1:6800/jsonrpc`
+- `--aria2-secret`: the password of aria2, default is empty
+- `--download`: whether to download or not, if not specified, only the file list is output
+- `--download-num`: List of files to download, default is "0" (means all files)
 
-If you want to download the second file, you need `downloadNum="2"`
+If you want to download specific files, use the `--download-num` option:
 
-If you want to download the second and third file, you need `downloadNum="2-3"`
+- Download the second file: `--download-num "2"`
+- Download the second and third file: `--download-num "2-3"`
+- Download the second, third, fourth, seventh file: `--download-num "2-4,7"`
 
-If you want to download the second, third, fourth, seventh file, you need `downloadNum="2-4,7"`
+Example usage:
+```bash
+# List files only
+python main.py "your-onedrive-share-url"
 
-and so on.
+# Download all files
+python main.py "your-onedrive-share-url" --download
 
-After modifying, make sure the target aria2 is on and execute `python3 main.py`
+# Download specific files
+python main.py "your-onedrive-share-url" --download --download-num "2-4,7"
+
+# Use custom aria2 settings
+python main.py "your-onedrive-share-url" --download --aria2-link "http://localhost:6800/jsonrpc" --aria2-secret "your-secret"
+```
 
 ## With password for shared links
 

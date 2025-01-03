@@ -2,6 +2,7 @@ import json
 import re
 import urllib
 import urllib.request
+import argparse
 
 from pprint import pprint
 from urllib import parse
@@ -17,14 +18,18 @@ from requests.adapters import HTTPAdapter, Retry
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
-OneDriveShareURL = "https://1drv.ms/f/c/5973e13d37fc66d0/EucPv2vQu4ZBq2FNh_Ara-kBpou6yfkbtePq3JFgq8oGgg?e=4KWQP1"
-
-aria2Link = "http://127.0.0.1:6800/jsonrpc"
-aria2Secret = ""
-
-
-isDownload = False
-downloadNum = "0"  # 1,2-4,5
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='OneDrive Share Link Push to Aria2')
+    parser.add_argument('onedrive_url', help='OneDrive share URL')
+    parser.add_argument('--aria2-link', default="http://127.0.0.1:6800/jsonrpc",
+                      help='Aria2 JSON-RPC URL (default: http://127.0.0.1:6800/jsonrpc)')
+    parser.add_argument('--aria2-secret', default="",
+                      help='Aria2 RPC secret (default: "")')
+    parser.add_argument('--download', action='store_true',
+                      help='Enable download mode (default: False)')
+    parser.add_argument('--download-num', default="0",
+                      help='Download file numbers, e.g., "1,2-4,5" (default: "0")')
+    return parser.parse_args()
 
 fileCount = 0
 
@@ -536,17 +541,18 @@ def getAria2ConfigDir(aria2URL, token):
 
 
 if __name__ == "__main__":
-    if isDownload:
+    args = parse_arguments()
+    if args.download:
         downloadFiles(
-            OneDriveShareURL,
+            args.onedrive_url,
             None,
             0,
-            aria2Link,
-            aria2Secret,
-            num=wildcardsMatchFiles(downloadNum),
+            args.aria2_link,
+            args.aria2_secret,
+            num=wildcardsMatchFiles(args.download_num),
         )
     else:
-        getFiles(OneDriveShareURL, None, 0)
+        getFiles(args.onedrive_url, None, 0)
     #
     # getFilesHavePwd(
     #   "https://jia666-my.sharepoint.com/:f:/g/personal/1025_xkx_me/EsqNMFlDoyZKt-RGcsI1F2EB6AiQMBIpQM4Ka247KkyOQw?e=oC1y7r&guestaccesstoken=xyz", "xkx")
