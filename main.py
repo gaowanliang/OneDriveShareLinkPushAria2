@@ -78,7 +78,7 @@ def getFiles(originalPath, req, layers, _id=0):
 
     # print(p.group(1))
     redirectURL = reqf.url
-    print(redirectURL)
+    # print(redirectURL)
 
     query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(redirectURL).query))
     redirectSplitURL = redirectURL.split("/")
@@ -116,12 +116,10 @@ def getFiles(originalPath, req, layers, _id=0):
         % (relativeFolder, rootFolder, relativeUrl, rootFolderUrl)
     )
 
-    print(graphqlVar, reqf.headers)
+    # print(graphqlVar, reqf.headers)
     s2 = urllib.parse.urlparse(redirectURL)
     tempHeader = copy.deepcopy(header)
     tempHeader["referer"] = redirectURL
-    if "set-cookie" in reqf.headers:
-        tempHeader["cookie"] = reqf.headers["set-cookie"]
     tempHeader["authority"] = s2.netloc
     tempHeader["content-type"] = "application/json;odata=verbose"
     # print(redirectSplitURL)
@@ -130,6 +128,7 @@ def getFiles(originalPath, req, layers, _id=0):
         "/".join(redirectSplitURL[:-3]) + "/_api/v2.1/graphql",
         data=graphqlVar.encode("utf-8"),
         headers=tempHeader,
+        cookies=reqf.cookies,
     )
     graphqlReq = json.loads(graphqlReq.text)
     # print(graphqlReq)
