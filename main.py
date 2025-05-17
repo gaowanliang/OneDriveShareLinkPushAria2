@@ -261,7 +261,6 @@ def downloadFiles(
 
     s2 = urllib.parse.urlparse(redirectURL)
     header["referer"] = redirectURL
-    header["cookie"] = reqf.headers["set-cookie"]
     header["authority"] = s2.netloc
 
     # .replace("-", "%2D")
@@ -269,8 +268,12 @@ def downloadFiles(
     # print(dd, [cc])
     headerStr = ""
     for key, value in header.items():
-        # print(key+':'+str(value))
-        headerStr += key + ":" + str(value) + "\n"
+        headerStr += key + ": " + str(value) + "\r\n"
+    headerStr += "Cookie: "
+    for key, value in reqf.cookies.items():
+        headerStr += key + "=" + str(value) + "; "
+    print(headerStr)
+    # exit(0)
 
     relativeFolder = ""
     rootFolder = query["id"]
@@ -309,7 +312,7 @@ def downloadFiles(
     s2 = urllib.parse.urlparse(redirectURL)
     tempHeader = copy.deepcopy(header)
     tempHeader["referer"] = redirectURL
-    tempHeader["cookie"] = reqf.headers["set-cookie"]
+    # tempHeader["Cookie"] = reqf.headers["Set-Cookie"]
     tempHeader["authority"] = s2.netloc
     tempHeader["content-type"] = "application/json;odata=verbose"
     # print(redirectSplitURL)
@@ -318,6 +321,7 @@ def downloadFiles(
         "/".join(redirectSplitURL[:-3]) + "/_api/v2.1/graphql",
         data=graphqlVar.encode("utf-8"),
         headers=tempHeader,
+        cookies=reqf.cookies
     )
     graphqlReq = json.loads(graphqlReq.text)
     # print(graphqlReq)
@@ -435,7 +439,7 @@ def downloadFiles(
                         "params": ["token:" + token, [cc], dd],
                     }
                 )
-
+                # print(jsonreq)
                 c = requests.post(aria2URL, data=jsonreq)
                 pprint(json.loads(c.text))
                 # exit(0)
